@@ -91,13 +91,13 @@ try {
         electron_1.dialog.showErrorBox('Error while looking for updates: ', error == null ? 'unknown' : (error.stack || error).toString());
     });
     electron_updater_1.autoUpdater.on('update-available', function () {
-        electron_1.dialog.showMessageBox({
+        electron_1.dialog.showMessageBox(win, {
             type: 'info',
             title: 'Found Updates',
             message: 'Found updates, do you want update now?',
             buttons: ['Sure', 'No']
-        }, function (buttonIndex) {
-            if (buttonIndex === 0) {
+        }).then(function (res) {
+            if (res.response === 0) {
                 electron_1.shell.openExternal(GITHUB_RELEASE_URL);
             }
         });

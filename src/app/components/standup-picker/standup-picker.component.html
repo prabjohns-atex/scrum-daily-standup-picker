@@ -6,6 +6,9 @@
             <button id="trigger-picker" mat-icon-button (click)="triggerPicker()">
                 <mat-icon aria-label="Start" class="toolbar-icon--scale">play_arrow</mat-icon>
             </button>
+            <button id="move-next" mat-icon-button (click)="moveNext()">
+                <mat-icon aria-label="Start" class="toolbar-icon--scale">navigate_next</mat-icon>
+            </button>
             <button *ngIf="isAudioPlaying" mat-icon-button (click)="pauseAudio()">
                 <mat-icon aria-label="Mute Audio">volume_off</mat-icon>
             </button>
@@ -30,15 +33,17 @@
         </ng-container>
     </section>
 
-    <div class="container-fluid mb-4">
+    <div class="container-fluid mb-4 " [ngClass]="{'pyro': isFireWorks()}">
+        <div [ngClass]="{'before after': isFireWorks()}"></div>
         <div class="row justify-content-center">
             <div class="col mt-4" *ngFor="let member of teamMembers">
-                <mat-card class="mx-auto member-card mat-elevation-z0" [ngClass]="{'member-card--selected': member.selected, 'member-card--disabled': member.disabled}"
+                <mat-card class="mx-auto member-card mat-elevation-z0" [ngClass]="{'member-card--selected': member.selected, 'member-card--disabled': member.disabled, 'shuffle-animation': isShuffling()}"
                     (click)="onMemberClick(member)">
                     <mat-card-header>
                         <mat-card-title class="member-card__title">{{member.name}}</mat-card-title>
                         <mat-card-subtitle *ngIf="member.disabled">{{'PAGES.STANDUP_PICKER.OUT_OF_OFFICE' | translate}}</mat-card-subtitle>
                         <mat-card-subtitle *ngIf="member.selected">{{'PAGES.STANDUP_PICKER.STARTS' | translate}}</mat-card-subtitle>
+                        <mat-card-subtitle *ngIf="member.timeStarted">Duration : {{ member.timeStarted- member.timeEnded }} seconds</mat-card-subtitle>
                     </mat-card-header>
                     <img mat-card-image [src]="sanitize(member.image)" alt="{{member.name}}">
                 </mat-card>

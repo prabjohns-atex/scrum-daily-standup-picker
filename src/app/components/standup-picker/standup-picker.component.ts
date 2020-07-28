@@ -11,6 +11,8 @@ import { Howl } from 'howler';
 import { AppSettings } from '../../models/app-settings';
 import { TeamMember } from '../../models/team-member';
 import { SettingsService } from '../../providers/settings.service';
+import set = Reflect.set;
+import {Time} from '@angular/common';
 
 const DEFAULT_COLOR_LOCAL_STORAGE_KEY = 'DEFAULT_COLOR';
 
@@ -23,6 +25,7 @@ export class StandupPickerComponent implements OnInit, OnDestroy {
   title: string;
   time: string;
   teamMembers: Member[] = [];
+  selectedTeamMember: Member;
   // CSS style need a relative path, we also set a default background
   backgroundImage = './assets/images/background.jpg';
   defaultColor = true;
@@ -136,6 +139,32 @@ export class StandupPickerComponent implements OnInit, OnDestroy {
       });
   }
 
+  isShuffling(): boolean {
+    return this.shuffleSubscription !== undefined && !this.shuffleSubscription.closed;
+  }
+  isFireWorks(): boolean {
+    return this.shuffleSubscription !== undefined && this.shuffleSubscription.closed;
+  }
+  moveNext(): void {
+    let setNext = false;
+    this.teamMembers.forEach(m => {
+      if (m.selected) {
+        setNext = true;
+        m.selected = false;
+      } else {
+        if (setNext && !m.disabled) {
+          m.selected = true;
+          this.selectedTeamMember = m;
+          this.title = this.translateService.instant(
+              'PAGES.STANDUP_PICKER.STARTS_TODAY',
+              { name: this.selectedTeamMember.name }
+          );
+          setNext = false;
+        }
+      }
+    });
+  }
+
   goToSettings(): void {
     this.router.navigate(['settings']);
   }
@@ -178,14 +207,17 @@ export class StandupPickerComponent implements OnInit, OnDestroy {
   private onPickComplete(): void {
     this.playAudio(this.settings.standupPicker.successSound);
 
-    const selectedTeamMember = shuffle.pick(this.getAvailableMembers());
+    this.selectedTeamMember = shuffle.pick(this.getAvailableMembers());
     this.teamMembers.forEach(m => {
-      m.selected = m.name === selectedTeamMember.name;
+      m.selected = m.name === this.selectedTeamMember.name;
+    });
+    this.teamMembers.sort(function (a, b) {
+      return a.selected ? -1 : b.selected  ? 1 : 0;
     });
 
     this.title = this.translateService.instant(
       'PAGES.STANDUP_PICKER.STARTS_TODAY',
-      { name: selectedTeamMember.name }
+      { name: this.selectedTeamMember.name }
     );
 
     let standupTimeInSec = this.settings.standupPicker.standupTimeInMin * 60;
@@ -198,6 +230,10 @@ export class StandupPickerComponent implements OnInit, OnDestroy {
       )
       .subscribe((secondsPassed: number) => {
         const remainingMinutes = Math.round(secondsPassed / 60);
+        if (this.selectedTeamMember.timeStarted === undefined) {
+          this.selectedTeamMember.timeStarted = secondsPassed;
+        }
+        this.selectedTeamMember.timeEnded = secondsPassed;
 
         this.time =
           secondsPassed !== 0
@@ -259,4 +295,6 @@ export class StandupPickerComponent implements OnInit, OnDestroy {
 
 interface Member extends TeamMember {
   selected: boolean;
+  timeStarted: number;
+  timeEnded: number;
 }

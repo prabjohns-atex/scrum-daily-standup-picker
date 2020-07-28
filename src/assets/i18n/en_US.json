@@ -15,8 +15,8 @@
       "TITLE": "Standup Picker",
       "CLICK_TO_SELECT_TEAM_MEMBER":
         "Click play icon on the right side to start",
-      "STARTS_TODAY": "{{name}} starts today",
-      "STARTS": "starts today",
+      "STARTS_TODAY": "{{name}} turn to talk",
+      "STARTS": "Now Talking",
       "REMAINING_STANDUP_TIME":
         "Remaining standup time: {{remainingMinutes}} minutes",
       "PLEASE_WAIT": "Please wait...",
